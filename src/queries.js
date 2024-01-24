@@ -50,31 +50,36 @@ export function useDeck() {
   const [deckId, setdeckId] = useState(null)
   const [currentCards, setCurrentCards] = useState([])
   const [remainding, setRemainding] = useState(0)
-  const isDone = remainding === 0
+  const [isFetching, setIsFetching] = useState(false)
+  const isNoRemainding = remainding === 0
 
   const draw = useCallback(() => {
     if (!deckId) return
-
+    setIsFetching(true)
     drawCard(deckId).then(data => {
       setCurrentCards([...currentCards, ...data.cards])
       setRemainding(data.remaining)
     })
+    .finally(() => setIsFetching(false))
   }, [deckId, currentCards])
 
   const shuffle = useCallback(() => {
+    setIsFetching(true)
     shuffledeck(deckId).then(data => {
       setRemainding(data.remaining)
       setCurrentCards([])
 
     })
+    .finally(() => setIsFetching(false))
   }, [deckId])
 
   useEffect(() => {
+    setIsFetching(true)
     fetchNewdeck().then(deck => { 
       setdeckId(deck.deck_id)
       setRemainding(deck.remaining)
-    })
+    }).finally(() => setIsFetching(false))
   },[])
 
-  return {remainding, draw, shuffle, isDone, currentCards}
+  return {remainding, draw, shuffle, isNoRemainding, currentCards, isFetching}
 }
